@@ -148,6 +148,7 @@ const WorkoutPage = () => {
       <button onClick={deleteWorkout} disabled={deleting}>
         {deleting ? "Deleting..." : "Delete Workout"}
       </button>
+      <button onClick={() => navigate(`/edit-workout/${id}`)}>Edit</button>
     </div>
   );
 };

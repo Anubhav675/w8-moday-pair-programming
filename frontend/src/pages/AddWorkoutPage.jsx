@@ -60,6 +60,7 @@ const AddWorkoutPage = () => {
         <select
           value={difficulty}
           onChange={(e) => setDifficulty(e.target.value)}
+          defaultValue="Beginner"
         >
           <option value="Beginner">Beginner</option>
           <option value="Intermediate">Intermediate</option>

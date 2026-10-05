@@ -47,7 +47,24 @@ const getWorkoutById = async (req, res) => {
 
 // PUT /api/workouts/:workoutId
 const updateWorkout = async (req, res) => {
-  res.send("updateWorkout");
+ const { workoutId } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(workoutId)) {
+    return res.status(400).json({ message: "Invalid workout ID" });
+  }
+  try {
+    const updatedWorkout = await Workout.findOneAndUpdate(
+      { _id: workoutId },
+      req.body,
+      { new: true }
+    );
+    if (updatedWorkout) {
+      res.status(200).json(updatedWorkout);
+    } else {
+      res.status(404).json({ message: "Workout not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 // DELETE /api/workouts/:workoutId
@@ -59,7 +76,7 @@ const deleteWorkout = async (req, res) => {
   try {
     const workout = await Workout.findByIdAndDelete(workoutId);
     if (workout) {
-      res.status(204);
+      res.status(204).send();
     } else {
       res.status(404).json({ message: "Workout not found" });
     }
