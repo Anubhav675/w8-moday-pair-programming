@@ -1,7 +1,153 @@
+// import { useParams, useNavigate } from "react-router-dom";
+// import { useEffect, useState } from "react";
+
+// const WorkoutPage = () => {
+//   const { id } = useParams();
+//   const [workout, setWorkout] = useState(null);
+//   const [error, setError] = useState("");
+//   const [deleting, setDeleting] = useState(false);
+//   const navigate = useNavigate();
+
+//   // const deleteWorkout = async () => {
+//   //   try{
+//   //      const res = await fetch(`/api/workouts/${id}`, {
+//   //     method: "DELETE",
+//   //   });
+//   //   if (!res.ok) {
+//   //     throw new Error("Could not delete workout");
+//   //   }
+//   //   console.log("Workout deleted successfully");
+//   // }catch(err){
+//   //   console.error("Error deleting workout:", err);
+//   // }
+//   // };
+
+//   // const handleDelete = async () => {
+//   //   const confirmDelete = window.confirm("Are you sure you want to delete this workout?"
+//   //   );
+//   //   if (!confirmDelete) return;
+
+//   //   await deleteWorkout();
+//   //   navigate("/");
+//   // };
+
+//   const deleteWorkout = async () => {
+//     // if (!window.confirm("Delete this workout?")) return;
+//     setDeleting(true);
+//     setError("");
+//     try {
+//       const response = await fetch(`/api/workouts/${id}`, { method: "DELETE" });
+//       if (!response.ok) {
+//         const data = await response.json();
+//         throw new Error(data.error || "Could not delete workout");
+//       }
+//       // navigate("/");
+//     } catch (err) {
+//       setError(err.message);
+//     } finally {
+//       setDeleting(false);
+//       navigate("/");
+//     }
+//   };
+
+//   useEffect(() => {
+//     const loadWorkout = async () => {
+//       try {
+//         const workout = await fetch(`/api/workouts/${id}`);
+//         const data = await workout.json();
+//         // console.log(data);
+//         if (!workout.ok) {
+//           throw new Error(data.error || "Could not load workout");
+//         }
+//         setWorkout(data);
+//       } catch (error) {
+//         setError(error.message);
+//       }
+//     };
+//     loadWorkout();
+//   }, [id]);
+
+//   return (
+//     <div className="workout-preview">
+//       <h2>Workout Details</h2>
+//       {error && <p>{error}</p>}
+//       {workout && (
+//         <div>
+//           <h3>{workout.title}</h3>
+//           <p>Difficulty: {workout.difficulty}</p>
+//           <p>Description: {workout.description}</p>
+//           <p>Price: ${workout.price.toFixed(2)}</p>
+//           <button onClick={deleteWorkout}>Delete</button>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default WorkoutPage;
+
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+
 const WorkoutPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [workout, setWorkout] = useState(null);
+  const [error, setError] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const load = async () => {
+      setWorkout(null);
+      setError("");
+      try {
+        const response = await fetch(`/api/workouts/${id}`, {
+          signal: controller.signal,
+        });
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.error || "Could not load workout");
+        setWorkout(data);
+      } catch (err) {
+        if (err.name !== "AbortError") setError(err.message);
+      }
+    };
+    load();
+    return () => controller.abort();
+  }, [id]);
+
+  const deleteWorkout = async () => {
+    if (!window.confirm("Delete this workout?")) return;
+    setDeleting(true);
+    setError("");
+    try {
+      const response = await fetch(`/api/workouts/${id}`, { method: "DELETE" });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Could not delete workout");
+      }
+      navigate("/");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (!workout)
+    return error ? <p role="alert">{error}</p> : <p>Loading workout...</p>;
   return (
     <div className="workout-preview">
-      <h2>Workout Details</h2>
+      <Link to="/">Back to workouts</Link>
+      <h2>{workout.title}</h2>
+      <p>Difficulty: {workout.difficulty}</p>
+      <p>{workout.description}</p>
+      <p>Price: ${workout.price.toFixed(2)}</p>
+      {error && <p role="alert">{error}</p>}
+      <button onClick={deleteWorkout} disabled={deleting}>
+        {deleting ? "Deleting..." : "Delete Workout"}
+      </button>
     </div>
   );
 };

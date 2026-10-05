@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-const WorkoutListing = (workout) => {
+const WorkoutListing = ({workout}) => {
   return (
     <div className="workout-preview">
       <h2>
@@ -8,7 +8,7 @@ const WorkoutListing = (workout) => {
       </h2>
       <p>Difficulty: {workout.difficulty}</p>
       <p>Description: {workout.description}</p>
-      <p>Price: ${workout.price.toFixed(2)}</p>
+      <p>Price: ${workout.price}</p>
     </div>
   );
 };
